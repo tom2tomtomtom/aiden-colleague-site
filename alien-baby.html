@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mothership by Alien Baby</title>
+  <style>
+    /* Reset & Base */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0f0a;
+      --bg-raised: #0f1a0f;
+      --bg-card: #131f13;
+      --bg-code: #0d170d;
+      --border: #1a3a1a;
+      --border-hover: #2a5a2a;
+      --text: #e8e8e8;
+      --text-muted: #8a9a8a;
+      --text-dim: #4a6a4a;
+      --accent: #3cb043;
+      --accent-soft: rgba(60, 176, 67, 0.1);
+      --accent-glow: rgba(60, 176, 67, 0.2);
+      --accent-hover: #2d8a34;
+      --white: #ffffff;
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+
+    ::selection { background: var(--accent); color: #fff; }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 15, 10, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .nav-logo {
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links { display: flex; gap: 0.25rem; }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.15s;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .nav-links a:hover { color: #fff; background: var(--bg-card); }
+    .nav-links a.active { color: #fff; background: var(--accent); }
+
+    /* Page sections */
+    .page { display: none; padding-top: 64px; }
+    .page.active { display: block; }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      text-align: center;
+      padding: 0 2rem 4rem;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 20%, rgba(10, 15, 10, 0.3) 50%, rgba(10, 15, 10, 0.85) 80%, var(--bg) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 720px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: #fff;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+    }
+
+    .hero .subtitle {
+      font-size: 1.125rem;
+      color: rgba(255,255,255,0.75);
+      max-width: 580px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.4);
+    }
+
+    .hero .cta {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.875rem 2rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.2s;
+      letter-spacing: -0.01em;
+      box-shadow: 0 4px 16px rgba(60, 176, 67, 0.35);
+      border: 1px solid rgba(60, 176, 67, 0.4);
+    }
+
+    .hero .cta:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(60, 176, 67, 0.45); }
+
+    /* Content sections */
+    .content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+    }
+
+    .content h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      margin: 5rem 0 1.5rem;
+      padding-top: 3rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .content h2:first-child { margin-top: 3rem; border-top: none; }
+
+    .content h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: -0.01em;
+      margin: 2.5rem 0 0.75rem;
+    }
+
+    .content h4 {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 2rem 0 0.5rem;
+    }
+
+    .content p {
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .content strong { color: var(--white); font-weight: 600; }
+
+    .content a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .content a:hover { border-bottom-color: var(--accent); }
+
+    .content ul, .content ol {
+      margin-bottom: 1rem;
+      padding-left: 1.25rem;
+    }
+
+    .content li {
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .content li::marker { color: var(--text-dim); }
+
+    /* Feature cards */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .features .feature-card:last-child {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 640px) {
+      .features { grid-template-columns: 1fr; }
+      .features .feature-card:last-child { grid-column: auto; }
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(10, 15, 10, 0.04);
+    }
+
+    .feature-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(60, 176, 67, 0.08); }
+
+    .feature-card h3 { font-size: 1rem; margin: 0 0 0.5rem; }
+    .feature-card p { font-size: 0.875rem; margin: 0; line-height: 1.55; }
+
+    .feature-card h3 {
+      margin: 0 0 0.75rem;
+      font-size: 1.0625rem;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.9375rem;
+      margin: 0;
+      line-height: 1.65;
+    }
+
+    /* Steps */
+    .steps {
+      counter-reset: step;
+      margin: 2rem 0;
+    }
+
+    .step {
+      counter-increment: step;
+      position: relative;
+      padding-left: 3.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .step::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2.25rem;
+      height: 2.25rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: var(--mono);
+    }
+
+    .step h4 { margin-top: 0.125rem; }
+    .step p { color: var(--text-muted); font-size: 0.9375rem; }
+
+    /* Code blocks */
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      margin: 1.25rem 0;
+      font-size: 0.8125rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.8125rem;
+    }
+
+    p code, li code {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      color: #3cb043;
+    }
+
+    /* Diagrams (ASCII art) - legacy, hidden */
+    .diagram { display: none; }
+
+    /* ── Visual Flow Diagrams ─────────────────────────────── */
+
+    .flow-section {
+      margin: 2.5rem 0;
+    }
+
+    /* Input columns */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 640px) { .input-grid { grid-template-columns: 1fr; } }
+
+    .input-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(10, 15, 10, 0.04);
+    }
+
+    .input-card .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.75rem;
+      font-size: 1.5rem;
+    }
+
+    .input-card h4 { font-size: 0.9375rem; margin-bottom: 0.375rem; color: var(--text); }
+
+    .input-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .input-card ul li {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-bottom: 0.125rem;
+    }
+
+    /* Flow arrow */
+    .flow-arrow {
+      display: flex;
+      justify-content: center;
+      padding: 0.75rem 0;
+      color: var(--border-hover);
+    }
+
+    .flow-arrow svg { width: 24px; height: 24px; }
+
+    /* Pipeline steps */
+    .pipeline {
+      position: relative;
+      margin: 2rem 0;
+    }
+
+    .pipeline-step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 1.25rem;
+      margin-bottom: 0;
+      padding: 1.5rem 0;
+      position: relative;
+    }
+
+    .pipeline-step + .pipeline-step { border-top: 1px solid var(--border); }
+
+    .pipeline-num {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .pipeline-step h4 {
+      font-size: 1rem;
+      margin: 0 0 0.375rem;
+      color: var(--text);
+    }
+
+    .pipeline-step p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin: 0 0 0.75rem;
+      line-height: 1.6;
+    }
+
+    /* Phantom score bars */
+    .phantom-scores {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 48px;
+      gap: 0.75rem;
+      align-items: center;
+      font-size: 0.8125rem;
+    }
+
+    @media (max-width: 480px) { .score-row { grid-template-columns: 100px 1fr 40px; } }
+
+    .score-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .score-track {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg-code);
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease-out;
+    }
+
+    .score-fill.high { background: var(--accent); }
+    .score-fill.med { background: #2d8a34; }
+    .score-fill.low { background: var(--border-hover); }
+
+    .score-value {
+      font-family: var(--mono);
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* Tag pills */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      margin: 0.5rem 0;
+    }
+
+    .tag {
+      font-size: 0.6875rem;
+      font-family: var(--mono);
+      padding: 0.25rem 0.625rem;
+      border-radius: 999px;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .tag.boost { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .tag.suppress { background: rgba(149, 165, 166, 0.1); border-color: var(--border-hover); color: var(--text-dim); text-decoration: line-through; }
+
+    /* Evolution bars */
+    .evo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    @media (max-width: 640px) { .evo-grid { grid-template-columns: 1fr; } }
+
+    .evo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 4px rgba(10, 15, 10, 0.04);
+    }
+
+    .evo-card h4 {
+      font-size: 0.8125rem;
+      color: var(--accent);
+      margin: 0 0 0.25rem;
+      font-weight: 600;
+    }
+
+    .evo-card .evo-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 0 0 1rem;
+    }
+
+    .evo-bar-row {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .evo-bar-label {
+      font-family: var(--mono);
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .evo-bar-track {
+      height: 10px;
+      border-radius: 5px;
+      background: var(--bg-code);
+      overflow: hidden;
+    }
+
+    .evo-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      background: var(--accent);
+      transition: width 0.8s ease-out;
+    }
+
+    .evo-bar-fill.faded { background: var(--border-hover); }
+    .evo-bar-fill.gone { background: var(--border); }
+
+    /* Knowledge graph visual */
+    .kg-visual {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin: 2rem 0;
+    }
+
+    @media (max-width: 640px) {
+      .kg-visual { grid-template-columns: 1fr; }
+      .kg-arrow-col { transform: rotate(90deg); margin: 0.5rem auto; }
+    }
+
+    .kg-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .kg-col h4 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin: 0 0 0.5rem;
+    }
+
+    .kg-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8125rem;
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(10, 15, 10, 0.04);
+      position: relative;
+    }
+
+    .kg-node.active { border-color: var(--accent); background: var(--accent-soft); }
+
+    .kg-node .kg-sub {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .kg-node .kg-link {
+      font-size: 0.6875rem;
+      color: var(--accent);
+      margin-top: 0.25rem;
+    }
+
+    .kg-arrow-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    /* Dream time visual */
+    .dreamtime-phases {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .dt-phase {
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .dt-phase + .dt-phase { border-top: 1px solid var(--border); }
+
+    .dt-phase:nth-child(1) { background: var(--bg-card); }
+    .dt-phase:nth-child(2) { background: var(--bg-raised); }
+    .dt-phase:nth-child(3) { background: var(--bg-code); }
+
+    .dt-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .dt-phase h4 { font-size: 0.9375rem; margin: 0 0 0.25rem; color: var(--text); }
+    .dt-phase p { font-size: 0.8125rem; color: var(--text-muted); margin: 0; line-height: 1.6; }
+
+    /* Provocation cards */
+    .prov-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+
+    .prov-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      box-shadow: 0 2px 4px rgba(10, 15, 10, 0.04);
+    }
+
+    .prov-badge {
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .prov-badge.tension { background: rgba(60, 176, 67, 0.12); color: var(--accent); }
+    .prov-badge.gap { background: rgba(60, 200, 120, 0.2); color: #3cb043; }
+
+    .prov-card p { font-size: 0.8125rem; color: var(--text-muted); margin: 0.375rem 0 0; line-height: 1.5; }
+
+    .prov-btn {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.375rem 0.875rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    .prov-btn.primary { background: var(--accent); color: #fff; }
+    .prov-btn.ghost { background: var(--bg-code); color: var(--text-muted); }
+
+    /* Done-for-you banner */
+    .dfy-banner {
+      background: linear-gradient(135deg, #2D3436 0%, #3D4447 100%);
+      border-radius: 16px;
+      padding: 2rem 2.25rem;
+      margin: 2.5rem 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    @media (max-width: 640px) {
+      .dfy-banner { grid-template-columns: 1fr; text-align: center; }
+    }
+
+    .dfy-banner h4 {
+      color: #fff;
+      font-size: 1.0625rem;
+      margin: 0 0 0.375rem;
+    }
+
+    .dfy-banner p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .dfy-banner .dfy-btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 10px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .dfy-banner .dfy-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    /* Inline service note */
+    .service-note {
+      background: var(--bg-raised);
+      border: 1px dashed var(--border-hover);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 0.625rem;
+      align-items: flex-start;
+    }
+
+    .service-note .sn-icon {
+      flex-shrink: 0;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .service-note strong { color: var(--text); }
+
+    /* Comparison table */
+    .comparison {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem 0;
+      font-size: 0.875rem;
+    }
+
+    .comparison th {
+      text-align: left;
+      padding: 0.875rem 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison td {
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    .comparison td:first-child {
+      color: var(--white);
+      font-weight: 500;
+      width: 25%;
+    }
+
+    .comparison tr:last-child td { border-bottom: none; }
+
+    /* Callout boxes */
+    .callout {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+      font-size: 0.9375rem;
+    }
+
+    .callout p { margin: 0; color: var(--text); }
+    .callout strong { color: var(--text); }
+
+    /* Two-column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    @media (max-width: 640px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* Modes card */
+    .mode-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 2px 4px rgba(10, 15, 10, 0.04);
+    }
+
+    .mode-card h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+    }
+
+    .mode-card p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    /* Timeline */
+    .timeline {
+      margin: 2rem 0;
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.5rem;
+      bottom: 0.5rem;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 0.5rem;
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      transform: translateX(-4px);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    .timeline-item h4 {
+      font-size: 0.9375rem;
+      color: var(--accent);
+      margin: 0 0 0.25rem;
+    }
+
+    .timeline-item p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      background: var(--bg-raised);
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* Hamburger for mobile */
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; }
+    .nav-toggle span { display: block; width: 20px; height: 2px; background: var(--text-muted); margin: 4px 0; transition: 0.2s; }
+
+    @media (max-width: 768px) {
+      .nav-toggle { display: block; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        flex-direction: column;
+        padding: 1rem;
+      }
+      .nav-links.open { display: flex; }
+      .hero { padding: 5rem 1.5rem 4rem; }
+      .content { padding: 0 1.5rem 4rem; }
+      .diagram { font-size: 0.625rem; padding: 1rem; }
+    }
+
+    /* Feedback bar */
+    .feedback-bar {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin: 0.5rem 0;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+
+    .bar {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      overflow: hidden;
+    }
+
+    .bar-label {
+      width: 120px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .bar-value {
+      width: 40px;
+      text-align: right;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">ALIEN BABY <span>// MOTHERSHIP</span></div>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a href="#overview" class="active" onclick="showPage('overview')">Overview</a>
+      <a href="#setup" onclick="showPage('setup')">Setup Guide</a>
+      <a href="#how-it-works" onclick="showPage('how-it-works')">How It Works</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PAGE 1: OVERVIEW                                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div id="overview" class="page active">
+  <div class="hero">
+    <div class="hero-bg">
+      <img src="mothership.png" alt="Mothership by Alien Baby">
+    </div>
+    <div class="hero-content">
+      <p class="subtitle">Alien Baby's creative intelligence. Cultivated from your collective's&nbsp;DNA.</p>
+      <a href="#setup" class="cta" onclick="showPage('setup')">Get Started</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <h2>What makes it different</h2>
+
+    <div class="features">
+      <div class="feature-card">
+        <div style="font-size: 1.5rem; margin-bottom: 0.75rem;">&#128126;</div>
+        <h3>It has Alien Baby's personality.</h3>
+        <p>Built from team interviews and internal docs. Pushes back on safe thinking. Defends bold ideas. Not generic AI. Yours.</p>
+      </div>
+
+      <div class="feature-card">
+        <div style="font-size: 1.5rem; margin-bottom: 0.75rem;">&#127919;</div>
+        <h3>It knows your clients and campaigns.</h3>
+        <p>Each workspace carries a persistent brief and personality preferences. DSYF knows the purpose. A new brand workspace knows the territory. No re-briefing.</p>
+      </div>
+
+      <div class="feature-card">
+        <div style="font-size: 1.5rem; margin-bottom: 0.75rem;">&#129504;</div>
+        <h3>It connects to the collective's brain.</h3>
+        <p>Strategy docs, cultural insights, brand frameworks, campaign learnings. Connected, structured, and searchable.</p>
+      </div>
+
+      <div class="feature-card">
+        <div style="font-size: 1.5rem; margin-bottom: 0.75rem;">&#128300;</div>
+        <h3>It evolves with the collective.</h3>
+        <p>Feedback shapes personality. Perspectives that resonate get stronger. Approaches that miss the mark fade.</p>
+      </div>
+
+      <div class="feature-card">
+        <div style="font-size: 1.5rem; margin-bottom: 0.75rem;">&#127769;</div>
+        <h3>It thinks overnight.</h3>
+        <p>Reviews conversations. Identifies tensions. Spots patterns. Morning login: "I was thinking about what you said yesterday."</p>
+      </div>
+    </div>
+
+    <h2>Two modes</h2>
+
+    <div class="two-col">
+      <div class="mode-card" style="border-top: 3px solid var(--accent);">
+        <h4 style="color: var(--accent); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Collaborator</h4>
+        <p>Builds on the collective's thinking. Brings perspectives but frames pushback as contribution. Your creative partner.</p>
+      </div>
+      <div class="mode-card" style="border-top: 3px solid var(--accent);">
+        <h4 style="color: var(--accent); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Provocateur</h4>
+        <p>Embodies perspectives with conviction. Disagrees directly. Looks for safe thinking to dismantle. We come in peace, but we don't come quietly.</p>
+      </div>
+    </div>
+
+    <p style="color: var(--text-muted); font-size: 0.9375rem;">Switch between them mid-conversation with one click.</p>
+
+    <h2>How Mothership gets built</h2>
+
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Redbaez handles all of this for Alien Baby. Most collectives are operational within a week.</p>
+
+    <div class="steps">
+      <div class="step">
+        <h4>We interview the collective</h4>
+        <p>10 minutes each. 13 questions about how Alien Baby actually works. The hybrid thinking. The unwritten rules. Not the polished version.</p>
+      </div>
+      <div class="step">
+        <h4>We structure your knowledge</h4>
+        <p>Campaign decks, brand frameworks, cultural insights, DSYF learnings. We build a connected knowledge base that Mothership can traverse and reference.</p>
+      </div>
+      <div class="step">
+        <h4>Mothership cultivates phantoms</h4>
+        <p>Personality fragments born from Alien Baby's culture. Extracted from interviews and documents, themed and deduplicated. The collective's DNA, crystallised.</p>
+      </div>
+      <div class="step">
+        <h4>We curate, you approve</h4>
+        <p>Redbaez does the first pass: removes duplicates and generics, highlights the strongest candidates. The collective does a 15-minute sign-off.</p>
+      </div>
+      <div class="step">
+        <h4>Start creating</h4>
+        <p>Workspaces configured for each client and campaign. Briefs loaded. Phantom preferences set. Mothership is ready. And gets sharper every day.</p>
+      </div>
+    </div>
+
+    <h2>Built for Alien Baby</h2>
+
+    <p>White-label. Your name. Your brand. Your colours. Mothership is Alien Baby's alone. Your culture, your thinking, completely isolated. Nobody else gets access to your collective's intelligence.</p>
+
+    <div class="callout">
+      <p><strong>Ready to spawn Mothership?</strong> Contact <a href="mailto:tom@redbaez.com">tom@redbaez.com</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PAGE 2: SETUP GUIDE                                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div id="setup" class="page">
+  <div class="content" style="padding-top: 6rem;">
+    <h2 style="margin-top: 0;">Setup Guide</h2>
+
+    <p>Mothership needs two things from the collective: <strong>your people</strong> and <strong>your knowledge</strong>. The interviews capture how your team thinks. The knowledge base captures what the collective knows. Together, they give Mothership genuine creative personality grounded in real expertise.</p>
+
+    <div class="dfy-banner">
+      <div>
+        <h4>Don't want to do any of this yourself?</h4>
+        <p>Redbaez handles the entire setup. We structure your vault, run your interviews, curate your phantoms, and configure your workspaces. You just show up and start talking to your new colleague.</p>
+      </div>
+      <a href="mailto:tom@redbaez.com" class="dfy-btn">Let us handle it</a>
+    </div>
+
+    <p style="color: var(--text-muted);">If you prefer to self-serve, here's the full walkthrough. Allow 2-3 hours spread across a few days (interviews happen asynchronously).</p>
+
+    <h2>Step 1: Prepare your knowledge base</h2>
+
+    <div class="service-note">
+      <span class="sn-icon">&#9997;</span>
+      <div><strong>Redbaez can do this for you.</strong> Send us your existing documents (Google Drive folder, Dropbox link, or email attachments) and we'll structure them into a fully linked Obsidian vault with frontmatter, wiki-links, and an Index. Typical turnaround: 2-3 days.</div>
+    </div>
+
+    <p>Mothership works best when it has structured access to the collective's thinking. The recommended approach is an <strong>Obsidian vault synced via GitHub</strong>. This gives Mothership heading-aware document parsing, wiki-link traversal between connected ideas, and metadata-driven relevance ranking.</p>
+
+    <p>If you don't use Obsidian, you can upload files directly (PDF, DOCX, PPTX, images, markdown) or sync a Google Drive folder.</p>
+
+    <h3>Option A: Obsidian vault (recommended)</h3>
+
+    <h4>What to include</h4>
+
+    <p>Focus on documents that capture the collective's culture, values, and way of working. Not every file in your Google Drive. Quality over quantity.</p>
+
+    <ul>
+      <li>Brand strategy documents</li>
+      <li>Creative manifestos or philosophies</li>
+      <li>Process documentation (how things actually work, not the aspirational version)</li>
+      <li>Client briefs and post-campaign learnings</li>
+      <li>Cultural insights and research</li>
+      <li>Team philosophy or values statements</li>
+      <li>Case study write-ups (the honest internal ones, not the award submissions)</li>
+    </ul>
+
+    <h4>Structuring your vault</h4>
+
+    <p>Create a folder structure that reflects how the collective thinks:</p>
+
+<pre><code>Agency-Brain/
+├── Brand/
+│   ├── Brand Strategy.md
+│   ├── Brand Positioning.md
+│   └── Brand Voice & Tone.md
+├── Culture/
+│   ├── Agency Values.md
+│   ├── How We Work.md
+│   └── Unwritten Rules.md
+├── Clients/
+│   ├── Alien Baby/
+│   │   ├── Brief.md
+│   │   ├── Strategy.md
+│   │   └── Learnings.md
+│   └── Other Client/
+│       └── ...
+├── Strategy/
+│   ├── Consumer Insights.md
+│   └── Cultural Tensions.md
+├── Process/
+│   ├── Creative Process.md
+│   └── Briefing Process.md
+└── Index.md</code></pre>
+
+    <h4>Writing notes that Mothership can learn from</h4>
+
+    <p><strong>Use frontmatter.</strong> Put metadata at the top of every note:</p>
+
+<pre><code>---
+tags: [brand, strategy, positioning]
+status: active
+updated: 2026-03-15
+description: Core brand positioning framework
+---</code></pre>
+
+    <p>Why this matters:</p>
+    <ul>
+      <li><code>status: active</code> documents get a relevance boost. <code>status: archived</code> documents get deprioritised.</li>
+      <li><code>tags</code> that match active discussion topics get boosted. Tag notes with the domains they cover.</li>
+      <li><code>description</code> becomes the document summary without needing an AI call.</li>
+    </ul>
+
+    <p><strong>Use wiki-links.</strong> Link between related notes:</p>
+
+<pre><code>Our [[Brand Positioning]] is built on the tension between
+[[Consumer Insights]] and our [[Cultural Tensions]] framework.</code></pre>
+
+    <p>Mothership follows these links. When it retrieves a document, it also pulls in summaries of linked documents. A single search result brings in a web of connected knowledge.</p>
+
+    <p><strong>Use headings for structure.</strong> Each heading section becomes a separate searchable chunk that carries its full path. When Mothership retrieves "Psychographic Profile", it knows it lives under Brand Strategy &gt; Target Audience.</p>
+
+    <p><strong>Index files are hub documents.</strong> A file that primarily links to other files gets stored as a single navigational unit and boosted for broad questions.</p>
+
+    <h4>Using Claude Code to prepare your vault</h4>
+
+    <div class="callout">
+      <p>If you have <strong>Claude Code</strong> (Anthropic's CLI tool), you can use it to convert existing documents into a structured Obsidian vault with frontmatter, wiki-links, and an Index. This is optional but can save significant setup time.</p>
+    </div>
+
+    <p>Example prompt:</p>
+
+<pre><code>"I have a folder of agency documents at ~/agency-docs/.
+Help me convert them into a structured Obsidian vault
+with frontmatter (tags, status, description), wiki-links
+between related notes, and an Index.md. Organise by:
+Brand, Culture, Clients, Strategy, Process."</code></pre>
+
+    <h4>Pushing to GitHub and connecting</h4>
+
+    <div class="steps">
+      <div class="step">
+        <h4>Create a private GitHub repository</h4>
+        <p>Your vault contents will be private and only accessible to Mothership via a scoped token.</p>
+      </div>
+      <div class="step">
+        <h4>Push your vault</h4>
+        <p><code>cd Agency-Brain && git init && git add -A && git commit -m "Initial vault" && gh repo create agency-brain --private --push</code></p>
+      </div>
+      <div class="step">
+        <h4>Generate a Personal Access Token</h4>
+        <p>GitHub Settings &gt; Developer Settings &gt; Fine-grained tokens. Read-only access to the repo.</p>
+      </div>
+      <div class="step">
+        <h4>Connect in Mothership</h4>
+        <p>In the Knowledge page, enter the repo URL, branch, and token. Click Connect. Sync takes 2-3 minutes for 500 notes.</p>
+      </div>
+    </div>
+
+    <h3>Option B: Direct file upload</h3>
+
+    <p>Drag and drop files in the Knowledge page. Supported: PDF, DOCX, PPTX, PNG/JPEG (AI vision analysis), TXT, CSV, Markdown. Large PDFs may take 30-60 seconds.</p>
+
+    <h3>Option C: Google Drive</h3>
+
+    <p>Connect a Google Drive folder via OAuth. Google Docs are automatically exported for processing.</p>
+
+    <h2>Step 2: Run team interviews</h2>
+
+    <div class="service-note">
+      <span class="sn-icon">&#9997;</span>
+      <div><strong>Redbaez can facilitate this.</strong> We send the interview links, chase responses, and monitor completion. All you need to do is tell us who to interview. We'll also advise on the best mix of roles and perspectives for the collective.</div>
+    </div>
+
+    <p>The interviews are the most important part of setup. <strong>Documents tell Mothership what the collective says it believes. Interviews tell Mothership what the collective actually does.</strong></p>
+
+    <h3>Who to interview</h3>
+
+    <p>Interview 3-5 team members. Choose a mix of roles, tenures, and perspectives. The strategist, the creative, the producer, the account lead. The optimist and the sceptic.</p>
+
+    <h3>The interview experience</h3>
+
+    <p>Each person gets a magic link email. The interview is a 10-minute chat, structured in three acts:</p>
+
+    <div class="steps">
+      <div class="step">
+        <h4>Act 1: Who are you?</h4>
+        <p>Identity and values. "Tell me about the best piece of work you've been involved in. Not the most awarded. The one that sits with you."</p>
+      </div>
+      <div class="step">
+        <h4>Act 2: How does it work?</h4>
+        <p>Real behaviour. "What are the unwritten rules here? The things nobody tells you but everyone knows."</p>
+      </div>
+      <div class="step">
+        <h4>Act 3: How do you think?</h4>
+        <p>Creative patterns. "When you've had an idea you're excited about but have doubt, how do you know whether to kill it or push through?"</p>
+      </div>
+    </div>
+
+    <p>The questions are designed to get past the polished version. Encourage honesty. Responses are used only to build the internal AI tool.</p>
+
+    <h2>Step 3: Review and approve phantoms</h2>
+
+    <div class="service-note">
+      <span class="sn-icon">&#9997;</span>
+      <div><strong>Redbaez can do the first pass.</strong> We review all generated phantoms, reject the obvious duplicates and generics, and present you with a curated shortlist. You approve, tweak, or reject. This turns a 2-hour review into a 15-minute sign-off.</div>
+    </div>
+
+    <p>After documents are processed and interviews complete, you'll have phantom candidates to review. This is where you curate Mothership's personality.</p>
+
+    <p><strong>Approve</strong> phantoms that capture something real about the collective. The feeling seed should resonate. The influence should describe a behaviour you actually want.</p>
+
+    <p><strong>Reject</strong> phantoms that are generic (could apply to any agency), redundant (same thing in different words), wrong (not actually true), or aspirational rather than real.</p>
+
+    <p>You need <strong>at least 50 approved phantoms</strong> for Mothership to have genuine range.</p>
+
+    <h2>Step 4: Configure workspaces</h2>
+
+    <div class="service-note">
+      <span class="sn-icon">&#9997;</span>
+      <div><strong>Redbaez can set these up.</strong> Tell us your active clients and we'll configure each workspace with a brief, phantom preferences, and knowledge scope. Ready to use from day one.</div>
+    </div>
+
+    <p>Create a workspace for each client or project. Each workspace can carry:</p>
+
+    <ul>
+      <li><strong>A brief.</strong> Brand personality, strategic tensions, objectives, tone notes. Injected into every conversation.</li>
+      <li><strong>Phantom preferences.</strong> Boost or suppress specific personality traits per workspace.</li>
+      <li><strong>Knowledge scope.</strong> Tag boosts and document associations that prioritise relevant knowledge.</li>
+    </ul>
+
+    <p>After 5+ conversations, you can auto-generate a brief from conversation patterns. Review and edit before saving.</p>
+
+    <h2>Step 5: Start working</h2>
+
+    <ul>
+      <li><strong>Be specific.</strong> "Give me 3 ideas that lean into the authenticity tension for Alien Baby" beats "Give me ideas."</li>
+      <li><strong>Build on conversations.</strong> Mothership gets more opinionated as conversations deepen.</li>
+      <li><strong>Give feedback.</strong> Every thumbs up or down shapes the personality.</li>
+      <li><strong>Use the right mode.</strong> Collaborator for building together. Challenger for pressure-testing.</li>
+      <li><strong>Keep workspaces separate.</strong> Don't mix clients.</li>
+    </ul>
+
+    <div class="dfy-banner" style="margin-top: 3rem;">
+      <div>
+        <h4>The full white-glove setup</h4>
+        <p>Vault structuring, interview facilitation, phantom curation, workspace configuration, and ongoing maintenance. Most agencies are fully operational within one week.</p>
+      </div>
+      <a href="mailto:tom@redbaez.com" class="dfy-btn">Talk to Redbaez</a>
+    </div>
+
+    <h3>What to expect over time</h3>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>Week 1</h4>
+        <p>Mothership has your knowledge and initial personality. Responses are informed but still finding their voice.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Weeks 2-4</h4>
+        <p>With regular feedback, the personality sharpens. Phantoms that resonate strengthen. Concepts start graduating into new personality traits.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Month 2+</h4>
+        <p>Mothership feels like it genuinely understands the collective. It pushes back in ways that feel familiar. It has opinions you recognise as culturally grounded.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p>For setup assistance or questions, contact <a href="mailto:tom@redbaez.com">tom@redbaez.com</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PAGE 3: HOW IT WORKS                                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div id="how-it-works" class="page">
+  <div class="content" style="padding-top: 6rem;">
+    <h2 style="margin-top: 0;">How It Works</h2>
+
+    <!-- ── BIG PICTURE ─────────────────────────────────── -->
+    <h3>The big picture</h3>
+    <p>Three inputs feed the cultivation engine. The engine produces personality fragments. You review and approve them. Then Mothership is ready.</p>
+
+    <div class="flow-section">
+      <div class="input-grid">
+        <div class="input-card">
+          <div class="icon" style="background: var(--accent-soft);">&#128483;</div>
+          <h4>Team Interviews</h4>
+          <ul>
+            <li>Values and beliefs</li>
+            <li>Creative process</li>
+            <li>Culture and vocabulary</li>
+          </ul>
+        </div>
+        <div class="input-card">
+          <div class="icon" style="background: rgba(60, 200, 120, 0.15);">&#128218;</div>
+          <h4>Agency Vault</h4>
+          <ul>
+            <li>Strategy docs</li>
+            <li>Brand guides</li>
+            <li>Wiki-linked insights</li>
+          </ul>
+        </div>
+        <div class="input-card">
+          <div class="icon" style="background: rgba(60, 140, 67, 0.15);">&#128196;</div>
+          <h4>Client Documents</h4>
+          <ul>
+            <li>Briefs and debriefs</li>
+            <li>Case studies</li>
+            <li>Research and data</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
+
+      <div class="feature-card" style="text-align: center; border-color: var(--accent); border-width: 2px;">
+        <h3 style="margin: 0 0 0.5rem; color: var(--accent);">Cultivation Engine</h3>
+        <p style="margin: 0; color: var(--text-muted); font-size: 0.875rem;">Trait extraction, theme clustering, deduplication, quality scoring. Produces phantom candidates for human review.</p>
+      </div>
+
+      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
+
+      <div class="input-grid">
+        <div class="input-card" style="border-color: var(--accent);">
+          <h4 style="color: var(--accent);">Base Phantoms</h4>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0;">25 core creative styles. Always present.</p>
+        </div>
+        <div class="input-card" style="border-color: var(--accent);">
+          <h4 style="color: var(--accent);">Agency Phantoms</h4>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0;">From your interviews and docs. Your unique DNA.</p>
+        </div>
+        <div class="input-card" style="border-color: var(--accent);">
+          <h4 style="color: var(--accent);">Pack Phantoms</h4>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0;">Add-on expertise. 0.8x weight (your culture leads).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MESSAGE PIPELINE ────────────────────────────── -->
+    <h3>What happens when you send a message</h3>
+
+    <div class="callout" style="margin-bottom: 2rem;">
+      <p><strong>Example:</strong> "What if we positioned the next DSYF drop as entertainment-first? Culture, not charity."</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-num" style="background: var(--accent-soft); color: var(--accent);">1</div>
+        <div>
+          <h4>Analysis</h4>
+          <p>A fast AI reads your message in milliseconds, detecting energy, momentum, emotional state, and keywords for phantom activation.</p>
+          <div class="tag-row">
+            <span class="tag">Energy: HIGH</span>
+            <span class="tag">Momentum: EXPLORING</span>
+            <span class="tag">Challenge: possible</span>
+          </div>
+          <div class="tag-row" style="margin-top: 0.25rem;">
+            <span class="tag">anti-luxury</span>
+            <span class="tag">raw</span>
+            <span class="tag">authentic</span>
+            <span class="tag">positioning</span>
+            <span class="tag">unpolished</span>
+            <span class="tag">real</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-step">
+        <div class="pipeline-num" style="background: rgba(60, 140, 67, 0.15); color: #3cb043;">2</div>
+        <div>
+          <h4>Personality Activation</h4>
+          <p>Keywords are matched against all phantoms. Each scores 0-1 based on relevance. Workspace preferences boost or suppress specific traits.</p>
+          <div class="phantom-scores">
+            <div class="score-row">
+              <span class="score-label">raw_authentic</span>
+              <div class="score-track"><div class="score-fill high" style="width: 92%;"></div></div>
+              <span class="score-value">0.92</span>
+            </div>
+            <div class="score-row">
+              <span class="score-label">challenge_conventions</span>
+              <div class="score-track"><div class="score-fill high" style="width: 85%;"></div></div>
+              <span class="score-value">0.85</span>
+            </div>
+            <div class="score-row">
+              <span class="score-label">brand_obsessed</span>
+              <div class="score-track"><div class="score-fill med" style="width: 78%;"></div></div>
+              <span class="score-value">0.78</span>
+            </div>
+            <div class="score-row">
+              <span class="score-label">cultural_tension</span>
+              <div class="score-track"><div class="score-fill med" style="width: 71%;"></div></div>
+              <span class="score-value">0.71</span>
+            </div>
+            <div class="score-row">
+              <span class="score-label">creative_stubborn</span>
+              <div class="score-track"><div class="score-fill med" style="width: 65%;"></div></div>
+              <span class="score-value">0.65</span>
+            </div>
+            <div class="score-row">
+              <span class="score-label" style="color: var(--text-dim);">luxury_refinement</span>
+              <div class="score-track"><div class="score-fill low" style="width: 12%;"></div></div>
+              <span class="score-value" style="color: var(--text-dim);">0.12</span>
+            </div>
+            <div class="score-row">
+              <span class="score-label" style="color: var(--text-dim);">safe_choice</span>
+              <div class="score-track"><div class="score-fill low" style="width: 8%;"></div></div>
+              <span class="score-value" style="color: var(--text-dim);">0.08</span>
+            </div>
+          </div>
+          <div class="tag-row">
+            <span class="tag boost">raw_authentic x1.5</span>
+            <span class="tag suppress">safe_choice x0.2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-step">
+        <div class="pipeline-num" style="background: rgba(60, 200, 120, 0.15); color: #3cb043;">3</div>
+        <div>
+          <h4>Knowledge Retrieval</h4>
+          <p>Your documents are searched using the message + phantom keywords. Results are ranked by relevance, freshness, tags, and workspace scope. Wiki-links pull in connected knowledge.</p>
+          <div class="tag-row">
+            <span class="tag">Relevance to query</span>
+            <span class="tag">Active > archived</span>
+            <span class="tag">Tag overlap</span>
+            <span class="tag">Workspace scope</span>
+            <span class="tag">Wiki-link expansion</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-step">
+        <div class="pipeline-num" style="background: rgba(188, 108, 37, 0.1); color: #3cb043;">4</div>
+        <div>
+          <h4>Collision Detection</h4>
+          <p>When opposing phantoms both activate strongly, Mothership recognises the creative tension. Instead of picking one side, it surfaces both perspectives honestly.</p>
+          <div class="tag-row">
+            <span class="tag boost">raw_authentic 0.92</span>
+            <span class="tag" style="background: rgba(60, 140, 67, 0.15); border-color: #E9C46A; color: #3cb043;">vs</span>
+            <span class="tag boost">brand_obsessed 0.78</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-step">
+        <div class="pipeline-num" style="background: rgba(138, 177, 125, 0.12); color: #6A9A5B;">5</div>
+        <div>
+          <h4>Response</h4>
+          <p>Everything combines into a single prompt: base personality, workspace brief, energy matching, activated phantoms, retrieved knowledge, and creative tension context. Claude generates a response that matches your energy, brings genuine perspectives, and cites relevant knowledge.</p>
+        </div>
+      </div>
+
+      <div class="pipeline-step">
+        <div class="pipeline-num" style="background: var(--bg-code); color: var(--text-muted);">6</div>
+        <div>
+          <h4>Learning</h4>
+          <p>After responding, the system records which phantoms fired, extracts recurring concepts, tracks your feedback, and updates personality weights. Every conversation makes Mothership sharper.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PERSONALITY EVOLUTION ────────────────────────── -->
+    <h3>How personality evolves</h3>
+
+    <div class="evo-grid">
+      <div class="evo-card">
+        <h4>Day 1</h4>
+        <p class="evo-desc">All phantoms at baseline. No preference.</p>
+        <div class="evo-bar-row"><span class="evo-bar-label">creative_stubborn</span><div class="evo-bar-track"><div class="evo-bar-fill" style="width: 50%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">raw_authentic</span><div class="evo-bar-track"><div class="evo-bar-fill" style="width: 50%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">safe_choice</span><div class="evo-bar-track"><div class="evo-bar-fill" style="width: 50%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">luxury_refinement</span><div class="evo-bar-track"><div class="evo-bar-fill" style="width: 50%;"></div></div></div>
+      </div>
+      <div class="evo-card">
+        <h4>Week 4</h4>
+        <p class="evo-desc">Feedback has shaped the personality.</p>
+        <div class="evo-bar-row"><span class="evo-bar-label">creative_stubborn</span><div class="evo-bar-track"><div class="evo-bar-fill" style="width: 80%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">raw_authentic</span><div class="evo-bar-track"><div class="evo-bar-fill" style="width: 85%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">safe_choice</span><div class="evo-bar-track"><div class="evo-bar-fill faded" style="width: 30%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">luxury_refinement</span><div class="evo-bar-track"><div class="evo-bar-fill faded" style="width: 35%;"></div></div></div>
+      </div>
+      <div class="evo-card">
+        <h4>Month 3</h4>
+        <p class="evo-desc">Personality matches YOUR taste.</p>
+        <div class="evo-bar-row"><span class="evo-bar-label">creative_stubborn</span><div class="evo-bar-track"><div class="evo-bar-fill" style="width: 95%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">raw_authentic</span><div class="evo-bar-track"><div class="evo-bar-fill" style="width: 95%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">safe_choice</span><div class="evo-bar-track"><div class="evo-bar-fill gone" style="width: 10%;"></div></div></div>
+        <div class="evo-bar-row"><span class="evo-bar-label">luxury_refinement</span><div class="evo-bar-track"><div class="evo-bar-fill gone" style="width: 0%;"></div></div></div>
+      </div>
+    </div>
+
+    <p><strong>Feedback loop:</strong></p>
+    <ul>
+      <li>Thumbs up: active phantoms strengthened (+0.1)</li>
+      <li>Thumbs down: active phantoms weakened (-0.05)</li>
+      <li>Explicit rejection: anti-phantom created (-0.5)</li>
+      <li>30 days unused: gradual decay, eventual archive</li>
+      <li>Concept appears 3+ times: graduates to new phantom</li>
+    </ul>
+
+    <div class="callout">
+      <p>Core convictions (pushback, honesty) never decay below floor. Mothership always retains capacity to challenge. <strong>Never becomes a yes-machine.</strong></p>
+    </div>
+
+    <!-- ── KNOWLEDGE GRAPH ─────────────────────────────── -->
+    <h3>How knowledge connects</h3>
+
+    <div class="kg-visual">
+      <div class="kg-col">
+        <h4>Your Obsidian Vault</h4>
+        <div class="kg-node">
+          Brand Strategy.md
+          <div class="kg-sub">## Target Audience</div>
+          <div class="kg-sub" style="padding-left: 0.75rem;">### Psychographic Profile</div>
+        </div>
+        <div class="kg-node">
+          Brand Positioning.md
+          <div class="kg-link">Links to [[Consumer Insights]]</div>
+        </div>
+        <div class="kg-node">
+          Consumer Insights.md
+          <div class="kg-link">Links to [[Cultural Tensions]]</div>
+        </div>
+        <div class="kg-node">Cultural Tensions.md</div>
+      </div>
+
+      <div class="kg-arrow-col">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+
+      <div class="kg-col">
+        <h4>Mothership's Knowledge Graph</h4>
+        <div class="kg-node active">
+          Brand Strategy
+          <div class="kg-sub">Target Audience > Psychographic Profile</div>
+        </div>
+        <div class="kg-node active" style="margin-left: 1rem;">
+          Consumer Insights
+          <div class="kg-sub">Linked from Brand Positioning</div>
+        </div>
+        <div class="kg-node active" style="margin-left: 2rem;">
+          Cultural Tensions
+          <div class="kg-sub">Linked from Consumer Insights</div>
+        </div>
+        <div class="callout" style="margin: 0.75rem 0 0; font-size: 0.8125rem; padding: 0.75rem 1rem;">
+          <p>One search result brings in a web of connected knowledge. Heading paths preserved. Link summaries included.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WORKSPACE SWITCHING ─────────────────────────── -->
+    <h3>Workspace context switching</h3>
+
+    <div class="two-col">
+      <div class="mode-card">
+        <h4 style="color: var(--accent);">Brand and Culture Workspace</h4>
+        <p style="margin-bottom: 0.75rem;"><strong>Brief:</strong> "Culture-shaping. Entertainment meets brand. Hybrid thinking."</p>
+        <div class="tag-row" style="margin-bottom: 0.75rem;">
+          <span class="tag boost">culture_shaper x1.5</span>
+          <span class="tag boost">entertainment_lens x1.3</span>
+        </div>
+        <div class="tag-row" style="margin-bottom: 0.75rem;">
+          <span class="tag suppress">safe_choice x0.2</span>
+          <span class="tag suppress">corporate_speak x0.3</span>
+        </div>
+        <p style="font-size: 0.8125rem; color: var(--text-muted);"><strong>Mothership feels:</strong> bold, cultural, provocative</p>
+      </div>
+      <div class="mode-card">
+        <h4 style="color: var(--accent);">DSYF Campaign Workspace</h4>
+        <p style="margin-bottom: 0.75rem;"><strong>Brief:</strong> "Anti-knife crime. 100% profits to prevention. Don't Stop Your Future."</p>
+        <div class="tag-row" style="margin-bottom: 0.75rem;">
+          <span class="tag boost">purpose_driven x1.5</span>
+          <span class="tag boost">authentic_voice x1.3</span>
+        </div>
+        <div class="tag-row" style="margin-bottom: 0.75rem;">
+          <span class="tag suppress">surface_level x0.3</span>
+        </div>
+        <p style="font-size: 0.8125rem; color: var(--text-muted);"><strong>Mothership feels:</strong> purposeful, raw, urgent</p>
+      </div>
+    </div>
+
+    <p style="color: var(--text-muted); text-align: center; font-size: 0.875rem; margin-top: 0.5rem;">Same Mothership. Same collective phantoms. Different personality expression per project.</p>
+
+    <!-- ── DREAM TIME ──────────────────────────────────── -->
+    <h3>The overnight brain (Dream Time)</h3>
+
+    <div class="dreamtime-phases">
+      <div class="dt-phase">
+        <div class="dt-icon" style="background: var(--accent-soft);">&#128126;</div>
+        <div>
+          <h4>Phase 1: Decay</h4>
+          <p>Phantoms unused for 30+ days gradually lose weight. Eventually archived if they fade below threshold. Core convictions (pushback, honesty) are protected and never decay below floor.</p>
+        </div>
+      </div>
+      <div class="dt-phase">
+        <div class="dt-icon" style="background: rgba(60, 140, 67, 0.15);">&#127756;</div>
+        <div>
+          <h4>Phase 2: Graduation</h4>
+          <p>Concepts discussed in 3+ conversations with high confidence become new phantom candidates. The collective's emerging obsessions crystallise into personality traits automatically.</p>
+        </div>
+      </div>
+      <div class="dt-phase">
+        <div class="dt-icon" style="background: rgba(60, 200, 120, 0.15);">&#128640;</div>
+        <div>
+          <h4>Phase 3: Provocations</h4>
+          <p>Scans yesterday's conversations for unresolved tensions, reviews the past week for recurring patterns, and checks for gaps in Mothership's expertise. Generates 3-5 observations per night.</p>
+        </div>
+      </div>
+    </div>
+
+    <h4 style="margin-top: 2rem;">Morning login</h4>
+    <p style="color: var(--text-muted); margin-bottom: 1rem;">"Mothership was thinking overnight. 2 new observations."</p>
+
+    <div class="prov-cards">
+      <div class="prov-card">
+        <div>
+          <span class="prov-badge tension">Tension</span>
+          <p>You were circling something about authenticity vs aspiration for Alien Baby yesterday. You never landed it. Here's a sharper version of the tension.</p>
+        </div>
+        <button class="prov-btn primary">Start Conversation</button>
+      </div>
+      <div class="prov-card">
+        <div>
+          <span class="prov-badge gap">Gap</span>
+          <p>Your conversations keep hitting brand architecture topics but your phantom pool has no brand architecture expertise.</p>
+        </div>
+        <button class="prov-btn ghost">Dismiss</button>
+      </div>
+    </div>
+
+    <h2>How this compares</h2>
+
+    <table class="comparison">
+      <thead>
+        <tr>
+          <th></th>
+          <th>ChatGPT / Claude</th>
+          <th>Mothership</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Personality</td>
+          <td>Generic, same for everyone</td>
+          <td>Cultivated from YOUR team's interviews and documents</td>
+        </tr>
+        <tr>
+          <td>Knowledge</td>
+          <td>General training data</td>
+          <td>The collective's vault, structured and connected</td>
+        </tr>
+        <tr>
+          <td>Memory</td>
+          <td>Forgets between sessions</td>
+          <td>Remembers concepts, evolves personality, connects dots</td>
+        </tr>
+        <tr>
+          <td>Client awareness</td>
+          <td>Needs re-briefing every time</td>
+          <td>Workspace briefs persist across all conversations</td>
+        </tr>
+        <tr>
+          <td>Feedback</td>
+          <td>No effect on future responses</td>
+          <td>Directly shapes which perspectives strengthen or fade</td>
+        </tr>
+        <tr>
+          <td>Creative stance</td>
+          <td>Agreeable by default</td>
+          <td>Has genuine opinions, pushes back on weak thinking</td>
+        </tr>
+        <tr>
+          <td>Overnight</td>
+          <td>Nothing</td>
+          <td>Reviews tensions, spots patterns, flags gaps</td>
+        </tr>
+        <tr>
+          <td>Multi-tenant</td>
+          <td>One instance for everyone</td>
+          <td>White-label per agency, completely isolated</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <p>For a demo or to discuss onboarding, contact <a href="mailto:tom@redbaez.com">tom@redbaez.com</a></p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Mothership is built for Alien Baby by <a href="mailto:tom@redbaez.com">Redbaez</a></p>
+</footer>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`.nav-links a[href="#${id}"]`).classList.add('active');
+  document.querySelector('.nav-links').classList.remove('open');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  history.replaceState(null, '', `#${id}`);
+}
+
+// Handle direct URL hash navigation
+if (window.location.hash) {
+  const id = window.location.hash.slice(1);
+  if (document.getElementById(id)) showPage(id);
+}
+</script>
+
+</body>
+</html>
