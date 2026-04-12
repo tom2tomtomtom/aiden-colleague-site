@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Alien Baby — Redbaez</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0f0a;
+      --bg-card: #131f13;
+      --bg-code: #0d170d;
+      --border: #1a3a1a;
+      --text: #e8e8e8;
+      --text-muted: #8a9a8a;
+      --text-dim: #4a6a4a;
+      --accent: #3cb043;
+      --accent-soft: rgba(60, 176, 67, 0.1);
+      --accent-glow: rgba(60, 176, 67, 0.25);
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'SF Mono', monospace;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+
+    /* ── Slide Container ─────────────────────────── */
+    .deck { width: 100vw; height: 100vh; position: relative; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 5vh 6vw;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .slide.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .slide.exiting { opacity: 0; transform: translateY(-20px); }
+
+    /* ── Navigation ──────────────────────────────── */
+    .slide-nav {
+      position: fixed;
+      bottom: 3vh;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(10, 15, 10, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.5rem 1.25rem;
+    }
+
+    .slide-dots { display: flex; gap: 6px; }
+
+    .slide-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      border: none; cursor: pointer;
+      transition: all 0.3s; padding: 0;
+    }
+
+    .slide-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+      width: 24px; border-radius: 4px;
+    }
+
+    .slide-counter {
+      font-family: var(--mono);
+      font-size: 0.6875rem;
+      color: var(--text-dim);
+      min-width: 3rem;
+      text-align: center;
+    }
+
+    .nav-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 1rem;
+      padding: 0.25rem; transition: color 0.2s;
+    }
+    .nav-btn:hover { color: #fff; }
+
+    /* ── Typography ──────────────────────────────── */
+    .slide h1 {
+      font-size: clamp(2.25rem, 4.5vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: #fff;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .slide h2 {
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: #fff;
+      text-align: center;
+      max-width: 800px;
+    }
+
+    .slide h3 {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.375rem;
+    }
+
+    .slide .subtitle {
+      font-size: clamp(0.9375rem, 1.4vw, 1.125rem);
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 600px;
+      margin-top: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .slide .label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Hero Slide ──────────────────────────────── */
+    .slide-hero { padding: 0; align-items: flex-end; }
+    .slide-hero .hero-bg { position: absolute; inset: 0; }
+    .slide-hero .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+    .slide-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to right, transparent 40%, rgba(10, 15, 10, 0.7) 75%, rgba(10, 15, 10, 0.9) 100%),
+        linear-gradient(to bottom, transparent 60%, rgba(10, 15, 10, 0.4) 100%);
+      z-index: 1;
+    }
+    .slide-hero .hero-content {
+      position: relative; z-index: 2;
+      margin-top: auto; margin-left: auto;
+      padding: 0 6vw 12vh;
+      text-align: right; max-width: 50%;
+    }
+
+    /* ── Card Grids ──────────────────────────────── */
+    .card-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; width: 100%; max-width: 800px; margin-top: 1.5rem; }
+    .card-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; width: 100%; max-width: 900px; margin-top: 1.5rem; }
+    .card-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.875rem; width: 100%; max-width: 960px; margin-top: 1.5rem; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card h3 { font-size: 0.875rem; margin-bottom: 0.25rem; }
+    .card p { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+    .card .agency { font-size: 0.625rem; color: var(--text-dim); margin-top: 0.5rem; font-family: var(--mono); }
+
+    /* ── Phase Cards ─────────────────────────────── */
+    .phase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      text-align: center;
+    }
+    .phase-card .phase-num {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--accent); color: #fff;
+      font-family: var(--mono); font-size: 0.875rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.75rem;
+    }
+    .phase-card h3 { font-size: 1rem; margin-bottom: 0.5rem; text-align: center; }
+    .phase-card p { font-size: 0.8125rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+    .phase-card .price { color: var(--accent); font-weight: 600; font-size: 0.8125rem; margin-top: 0.75rem; }
+
+    /* ── Callout ──────────────────────────────────── */
+    .callout {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      padding: 1rem 1.5rem;
+      margin-top: 1.5rem;
+      max-width: 700px;
+      text-align: left;
+    }
+    .callout p { margin: 0; font-size: 0.9375rem; }
+    .callout strong { color: #fff; }
+
+    /* ── Section Label ────────────────────────────── */
+    .section-label {
+      position: absolute;
+      top: 4vh; left: 6vw;
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+    }
+
+    /* ── Client Logo Row ─────────────────────────── */
+    .client-row {
+      display: flex; gap: 2.5rem; margin-top: 1.5rem;
+      align-items: center; justify-content: center;
+    }
+    .client-row span {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Timeline ─────────────────────────────────── */
+    .timeline-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      width: 100%;
+      max-width: 900px;
+      margin-top: 1.5rem;
+    }
+    .tl-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .tl-card .tl-day {
+      font-family: var(--mono);
+      font-size: 0.6875rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .tl-card h3 { font-size: 0.875rem; margin-bottom: 0.375rem; text-align: center; }
+    .tl-card p { font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; }
+
+    /* ── Stat card ─────────────────────────────────── */
+    .stat-row {
+      display: flex; gap: 3rem; margin-top: 2rem;
+      align-items: center; justify-content: center;
+    }
+    .stat { text-align: center; }
+    .stat .num {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .stat .desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.375rem;
+    }
+
+    /* ── Mode Cards ──────────────────────────────── */
+    .mode-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .mode-card .mode-label {
+      font-size: 0.625rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent); margin-bottom: 0.75rem;
+    }
+    .mode-card p { font-size: 0.8125rem; color: var(--text-muted); line-height: 1.55; margin: 0; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- SLIDE 1: HERO -->
+  <div class="slide slide-hero active">
+    <div class="hero-bg"><img src="alien-baby-hero.png" alt="AI for Alien Baby"></div>
+    <div class="hero-content">
+      <p class="subtitle" style="font-size: clamp(1.25rem, 2vw, 1.5rem); color: rgba(255,255,255,0.9); font-weight: 500;">How to make 8 people feel like&nbsp;80.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: THE PROBLEM -->
+  <div class="slide">
+    <h2>Every person in an 8-person agency does 3&nbsp;jobs.</h2>
+    <p class="subtitle">The strategist is also the researcher. The account lead is also the project manager. The founder is also the business development team. The creative is also the deck builder. Everyone is brilliant at one thing and stretched across&nbsp;three.</p>
+    <div class="callout" style="margin-top: 2rem;">
+      <p><strong>The problem isn't talent. It's bandwidth.</strong> The work that wins business (thinking, relationships, craft) gets squeezed by the work that keeps the lights on (research, admin, formatting, chasing).</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: THE VISION -->
+  <div class="slide">
+    <h2>What if every person had a team behind&nbsp;them?</h2>
+    <div class="card-grid-2" style="margin-top: 2rem;">
+      <div class="card">
+        <h3>The strategist</h3>
+        <p>Stops spending 2 days on competitor research. Gets it in 10 minutes. Walks into pitches with research packs that look like a 20-person planning department produced&nbsp;them.</p>
+      </div>
+      <div class="card">
+        <h3>The account lead</h3>
+        <p>Never writes a status update, timeline, or scope doc from scratch again. Those generate from a conversation. Hours back every&nbsp;week.</p>
+      </div>
+      <div class="card">
+        <h3>The creative</h3>
+        <p>Has a sparring partner at 11pm when the idea isn't landing. A system that knows the brief, the client, the brand voice. Not a chatbot. A configured&nbsp;colleague.</p>
+      </div>
+      <div class="card">
+        <h3>The founder</h3>
+        <p>Gets morning briefings, pipeline intelligence, and meeting prep without an EA or a BD hire. Walks into every meeting better prepared than the other&nbsp;side.</p>
+      </div>
+    </div>
+    <p class="subtitle" style="margin-top: 1.5rem;">This isn't AI doing your job. It's AI doing the 60% of your job that isn't creative thinking, so you can do the 40% that wins&nbsp;business.</p>
+  </div>
+
+  <!-- SLIDE 4: THREE PHASES -->
+  <div class="slide">
+    <div class="label">The Proposal</div>
+    <h2>Three phases</h2>
+    <div class="card-grid-3" style="margin-top: 2rem;">
+      <div class="phase-card">
+        <div class="phase-num">1</div>
+        <h3>Intelligence Audit + Claude&nbsp;Rollout</h3>
+        <p>Understand how the collective works. Find the grind. Roll out Claude as the daily operating system, configured per&nbsp;person.</p>
+        <div class="price">GBP 4,500</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">2</div>
+        <h3>Custom Tools</h3>
+        <p>Purpose-built skills and bespoke tools from a menu of 35 already proven at other agencies. Scoped per&nbsp;tool.</p>
+        <div class="price">Skills from GBP 350 | Tools from GBP&nbsp;2,500</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">3</div>
+        <h3>Mothership</h3>
+        <p>A cultivated AI colleague trained on AB's docs and staff interviews. Carries context. Develops taste. When you're&nbsp;ready.</p>
+        <div class="price">GBP 4,000/month</div>
+      </div>
+    </div>
+    <div class="callout">
+      <p><strong>Start with Phase 1.</strong> Everything else earns its way&nbsp;in.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: PHASE 1 DISCOVERY -->
+  <div class="slide">
+    <div class="section-label">Phase 1</div>
+    <div class="label">Week 1: Discovery</div>
+    <h2>8 conversations. 30 minutes&nbsp;each.</h2>
+    <p class="subtitle">Tom talks to every person in the collective via video call. Not a survey. A conversation about how you actually work, where the grind lives, and what you wish was&nbsp;faster.</p>
+    <div class="card-grid-3" style="margin-top: 2rem;">
+      <div class="card">
+        <h3>How you work</h3>
+        <p>What does a typical week actually look like? Not the org chart version. The real one. Where does time go?</p>
+      </div>
+      <div class="card">
+        <h3>Where the grind lives</h3>
+        <p>Which tasks eat hours but don't need your brain? The research, the formatting, the chasing, the repetitive&nbsp;admin.</p>
+      </div>
+      <div class="card">
+        <h3>What you wish was faster</h3>
+        <p>If you could clone yourself for one task, what would it be? That's where AI goes&nbsp;first.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: PHASE 1 SYNTHESIS -->
+  <div class="slide">
+    <div class="section-label">Phase 1</div>
+    <div class="label">Week 2: Synthesis + Rollout</div>
+    <h2>The 8-to-80 plan</h2>
+    <div class="timeline-row">
+      <div class="tl-card">
+        <div class="tl-day">Synthesis</div>
+        <h3>Map the grind</h3>
+        <p>Workflow map across all 8 roles. Pinch points ranked by hours wasted. Where AI has the biggest impact.</p>
+      </div>
+      <div class="tl-card">
+        <div class="tl-day">Present back</div>
+        <h3>The plan</h3>
+        <p>"Here's what I found. Here's what Claude does about it. Here's the rollout." Presented live to the full team.</p>
+      </div>
+      <div class="tl-card">
+        <div class="tl-day">Individual setup</div>
+        <h3>Tailored training</h3>
+        <p>Each person gets Claude configured for their role. Projects, Cowork, skills, plugins. Not generic. Theirs.</p>
+      </div>
+      <div class="tl-card">
+        <div class="tl-day">Handover</div>
+        <h3>Operating system</h3>
+        <p>The collective now has an intelligent operating system. Every person has a team behind them.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: WHAT CLAUDE BECOMES -->
+  <div class="slide">
+    <div class="section-label">Phase 1</div>
+    <div class="label">What the collective gets</div>
+    <h2>Claude as your agency operating&nbsp;system</h2>
+    <div class="card-grid-3">
+      <div class="card">
+        <h3>Projects</h3>
+        <p>A dedicated workspace per client with persistent briefs, brand voice, and context that carries across every conversation. No re-briefing.&nbsp;Ever.</p>
+      </div>
+      <div class="card">
+        <h3>Cowork</h3>
+        <p>Delegate multi-step tasks and walk away. Research packs, competitive audits, first-draft decks. It works while you do something&nbsp;else.</p>
+      </div>
+      <div class="card">
+        <h3>Skills</h3>
+        <p>Custom commands configured for AB's workflow. /brief-check, /meeting-prep, /pitch-draft. One slash command, structured&nbsp;output.</p>
+      </div>
+      <div class="card">
+        <h3>Agents</h3>
+        <p>Autonomous specialists. Morning briefing agent. Pipeline intel agent. Trend monitoring agent. They run on schedule, not on&nbsp;demand.</p>
+      </div>
+      <div class="card">
+        <h3>Plugins</h3>
+        <p>Connect Claude to Google Drive, Sheets, Gmail, Slack. The operating system talks to the tools you already&nbsp;use.</p>
+      </div>
+      <div class="card">
+        <h3>Memory</h3>
+        <p>Claude learns how each person works. Preferences, patterns, shortcuts. Gets faster and more useful every&nbsp;week.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: PHASE 1 PRICING -->
+  <div class="slide">
+    <div class="section-label">Phase 1</div>
+    <h2>GBP 4,500</h2>
+    <p class="subtitle" style="max-width: 650px;">Full rate is GBP 7,500 (5 days at GBP 1,500/day). The reduced rate reflects something&nbsp;specific.</p>
+    <div class="callout" style="margin-top: 2rem; max-width: 750px;">
+      <p>Alien Baby is exactly the kind of agency that will shape what agencies look like in the future. Small team, massive ambition, human magic on top of an AI operating system. Tom wants to be the one who builds that proof case. The reduced rate is his investment in proving the&nbsp;model.</p>
+    </div>
+    <div class="card-grid-2" style="margin-top: 1.5rem; max-width: 700px;">
+      <div class="card" style="text-align: center;">
+        <h3>Case study</h3>
+        <p>With AB's permission, Tom documents the before and after. "8-person agency, X hours saved in month one." That story opens&nbsp;doors.</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3>No lock-in</h3>
+        <p>If Phase 1 doesn't make the team faster, there's no Phase 2. Tom's betting on the work speaking for&nbsp;itself.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: PHASE 2 PHILOSOPHY -->
+  <div class="slide">
+    <div class="section-label">Phase 2</div>
+    <h2>None of these tools do&nbsp;strategy.</h2>
+    <p class="subtitle">The collective's strategists do strategy. These tools do the grunt work that eats their time: research, formatting, data entry, competitive scanning, timeline wrangling. The goal is to give strategists their hours back, not replace their&nbsp;thinking.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="num">35</div><div class="desc">tools built</div></div>
+      <div class="stat"><div class="num">4</div><div class="desc">agencies</div></div>
+      <div class="stat"><div class="num">80-120</div><div class="desc">hours/week saved</div></div>
+    </div>
+    <div class="client-row">
+      <span>Mother London</span>
+      <span>Uncommon Creative</span>
+      <span>Alt-Shift</span>
+      <span>Monigle</span>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: RESEARCH TOOLS -->
+  <div class="slide">
+    <div class="section-label">Phase 2</div>
+    <div class="label">Research and Intelligence</div>
+    <h2>2 days of work in 2&nbsp;minutes</h2>
+    <div class="card-grid-4">
+      <div class="card">
+        <h3>Competitor Audit</h3>
+        <p>Competitive landscape, positioning gaps, share of voice. Structured audit with&nbsp;sources.</p>
+        <div class="agency">Uncommon Creative</div>
+      </div>
+      <div class="card">
+        <h3>Ad Finder</h3>
+        <p>9 ad databases + YouTube. Verdict per territory: LOCKED, CONTESTED, EXPLORED,&nbsp;OPEN.</p>
+        <div class="agency">Uncommon Creative</div>
+      </div>
+      <div class="card">
+        <h3>Audience Deep Dive</h3>
+        <p>Demographics, psychographics, media habits, cultural tensions. Briefing-doc&nbsp;ready.</p>
+        <div class="agency">Uncommon Creative</div>
+      </div>
+      <div class="card">
+        <h3>Cultural Trend Spotter</h3>
+        <p>Emerging signals across 6 platforms. Opportunity scored 0-100 with brand&nbsp;alignment.</p>
+        <div class="agency">Uncommon Creative, Mother London</div>
+      </div>
+      <div class="card">
+        <h3>Morning Briefings</h3>
+        <p>Automated daily intel per client and category. In inbox before&nbsp;9am.</p>
+        <div class="agency">Mother London</div>
+      </div>
+      <div class="card">
+        <h3>Category Deep Diver</h3>
+        <p>Market size, key players, recent shifts, white space. The week-long research&nbsp;pack.</p>
+        <div class="agency">Uncommon Creative</div>
+      </div>
+      <div class="card">
+        <h3>Meeting Prep Bot</h3>
+        <p>Prospect name in, 1-page brief out. News, history, decision makers, talking&nbsp;points.</p>
+        <div class="agency">New build</div>
+      </div>
+      <div class="card">
+        <h3>Daily Lead Intel</h3>
+        <p>Staff moves, lost accounts, circulating briefs. New business morning&nbsp;radar.</p>
+        <div class="agency">New build</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: PRODUCTION TOOLS -->
+  <div class="slide">
+    <div class="section-label">Phase 2</div>
+    <div class="label">Production, Content, and Infrastructure</div>
+    <h2>The necessary but not creative&nbsp;work</h2>
+    <div class="card-grid-4" style="max-width: 980px;">
+      <div class="card">
+        <h3>Dynamic Timelines</h3>
+        <p>Q&amp;A to production Gantt. 4&nbsp;variants.</p>
+        <div class="agency">Uncommon Creative</div>
+      </div>
+      <div class="card">
+        <h3>SOW Writer</h3>
+        <p>Guided Q&amp;A to formatted scope&nbsp;docs.</p>
+        <div class="agency">Mother London</div>
+      </div>
+      <div class="card">
+        <h3>Presentation Generator</h3>
+        <p>Brand PPTX from content. 39+&nbsp;layouts.</p>
+        <div class="agency">Monigle</div>
+      </div>
+      <div class="card">
+        <h3>Brief Sharpener</h3>
+        <p>7-dimension stress test. Finds the&nbsp;holes.</p>
+        <div class="agency">Uncommon, Mother London</div>
+      </div>
+      <div class="card">
+        <h3>Traffic Manager</h3>
+        <p>Capacity grid, approvals, forward&nbsp;planning.</p>
+        <div class="agency">Alt-Shift</div>
+      </div>
+      <div class="card">
+        <h3>Asset Tracker</h3>
+        <p>Versions, feedback, approval&nbsp;sign-off.</p>
+        <div class="agency">Alt-Shift</div>
+      </div>
+      <div class="card">
+        <h3>Commercial Dashboard</h3>
+        <p>SOLD vs ALLOCATED. NLP&nbsp;query.</p>
+        <div class="agency">Uncommon Creative</div>
+      </div>
+      <div class="card">
+        <h3>Drive Indexer / RAG</h3>
+        <p>Entire Drive searchable by&nbsp;AI.</p>
+        <div class="agency">Uncommon Creative</div>
+      </div>
+      <div class="card">
+        <h3>Pitch Generator</h3>
+        <p>Brand name in, narrative out in agency&nbsp;voice.</p>
+        <div class="agency">New build</div>
+      </div>
+      <div class="card">
+        <h3>Case Study Writer</h3>
+        <p>Project details in, award-quality&nbsp;out.</p>
+        <div class="agency">New build</div>
+      </div>
+      <div class="card">
+        <h3>Creds Deck Writer</h3>
+        <p>Brief in, deck narrative out. Structure, not&nbsp;strategy.</p>
+        <div class="agency">New build</div>
+      </div>
+      <div class="card">
+        <h3>Brand Guidelines Bot</h3>
+        <p>Audits assets against brand&nbsp;rules.</p>
+        <div class="agency">Mother London</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: PHASE 2 PRICING -->
+  <div class="slide">
+    <div class="section-label">Phase 2</div>
+    <h2>Pick what you need, when you need&nbsp;it.</h2>
+    <p class="subtitle">Phase 1 identifies exactly what the collective needs. Then AB picks from the menu. Two price&nbsp;bands.</p>
+    <div class="card-grid-2" style="margin-top: 2rem; max-width: 700px;">
+      <div class="phase-card">
+        <h3>Skills and Workflows</h3>
+        <p>Claude Projects, custom prompts, configured skills. 10-12 in 3 days. Configuration, not&nbsp;code.</p>
+        <div class="price">From GBP 350 each</div>
+      </div>
+      <div class="phase-card">
+        <h3>Bespoke Tools</h3>
+        <p>Dashboards, integrations, automations, custom apps. Coded builds. 2-3 days&nbsp;each.</p>
+        <div class="price">From GBP 2,500 each</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top: 1.5rem;">
+      <p><strong>No commitment. No retainer.</strong> Scoped, built, tested, handed over. The collective owns everything. No subscription. No&nbsp;lock-in.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: MOTHERSHIP TEASER -->
+  <div class="slide">
+    <div class="section-label">Phase 3</div>
+    <div class="label">When you're ready</div>
+    <h2>Mothership</h2>
+    <p class="subtitle">A cultivated AI colleague that thinks like Alien Baby. 421 phantom personalities trained on the collective's documents and staff interviews. Carries context, remembers decisions, develops taste over time. Evolves while you&nbsp;sleep.</p>
+    <div class="card-grid-2" style="margin-top: 2rem; max-width: 700px;">
+      <div class="card" style="text-align: center;">
+        <h3>Not a chatbot.</h3>
+        <p>A room full of specialists with worldviews, blind spots, and the ability to argue. Built by a screenwriter, not an&nbsp;engineer.</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3>The aspiration.</h3>
+        <p>Phase 3 is here to show what's possible. Phases 1 and 2 earn it. GBP 4,000/month when you're&nbsp;ready.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: WHY REDBAEZ -->
+  <div class="slide">
+    <div class="label">Why Tom / Redbaez</div>
+    <h2>Built for agencies this size and&nbsp;bigger.</h2>
+    <div class="card-grid-3" style="margin-top: 2rem;">
+      <div class="card" style="text-align: center;">
+        <h3>Mother London</h3>
+        <p>200 people. 33 AI skills. 80-120 hours/week&nbsp;saved.</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3>Uncommon Creative</h3>
+        <p>50 people. Full AI infrastructure. Dashboards, RAG, 76&nbsp;prompts.</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3>Alt-Shift + Monigle</h3>
+        <p>Boutique production + US brand consultancy. Bespoke tools for&nbsp;each.</p>
+      </div>
+    </div>
+    <p class="subtitle" style="margin-top: 1.5rem;">Alien Baby would be the smallest team Tom works with. That means the highest concentration of value per person. Paula came from Uncommon. Tom built Uncommon's entire AI&nbsp;infrastructure.</p>
+  </div>
+
+  <!-- SLIDE 15: NEXT STEPS -->
+  <div class="slide">
+    <h2>Next steps</h2>
+    <div class="card-grid-3" style="margin-top: 2rem;">
+      <div class="phase-card">
+        <div class="phase-num">1</div>
+        <h3>Say yes to Phase 1</h3>
+        <p>GBP 4,500. Tom schedules 8 video calls with the collective across 2-3&nbsp;days.</p>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">2</div>
+        <h3>30 minutes each</h3>
+        <p>Tom learns how every person actually works. Finds the grind. Maps the&nbsp;opportunities.</p>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">3</div>
+        <h3>Two weeks later</h3>
+        <p>The collective has an intelligent operating system. Every person has a team behind them. 8 becomes&nbsp;80.</p>
+      </div>
+    </div>
+    <p class="subtitle" style="margin-top: 2.5rem;"><a href="mailto:tom@redbaez.com" style="color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent);">tom@redbaez.com</a></p>
+  </div>
+
+</div>
+
+<!-- Navigation -->
+<div class="slide-nav">
+  <button class="nav-btn" onclick="go(-1)">&#9664;</button>
+  <div class="slide-dots" id="dots"></div>
+  <span class="slide-counter" id="counter"></span>
+  <button class="nav-btn" onclick="go(1)">&#9654;</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let cur = 0;
+
+function show(i) {
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exiting');
+  setTimeout(() => slides[cur].classList.remove('exiting'), 500);
+  cur = Math.max(0, Math.min(i, slides.length - 1));
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.slide-dot').forEach((d, j) => d.classList.toggle('active', j === cur));
+  document.getElementById('counter').textContent = `${cur + 1} / ${slides.length}`;
+}
+
+function go(d) { show(cur + d); }
+
+// Build dots
+const dotsEl = document.getElementById('dots');
+slides.forEach((_, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'slide-dot' + (i === 0 ? ' active' : '');
+  dot.onclick = () => show(i);
+  dotsEl.appendChild(dot);
+});
+document.getElementById('counter').textContent = `1 / ${slides.length}`;
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+});
+</script>
+
+</body>
+</html>
